@@ -55,6 +55,7 @@
       <div *ngIf="errMessage">
         <h3>An error occured!</h3>
         <p>{{ errMessage }}}</p>
+        <button class="btn btn-danger" (click)="onClearErrors()">Ok</button>
       </div>
       <div class="spinner-border text-primary" *ngIf="isFetching"></div>
       <div class="list-group">

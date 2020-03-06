@@ -1,16 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { HttpService } from './http.service';
+import { OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   loadedPosts = [];
   isFetching = false;
   errMessage = null;
+  ErrSubscription: Subscription;
 
   constructor(private httpClient: HttpClient, private httpService: HttpService) {}
 
@@ -21,6 +24,9 @@ export class AppComponent implements OnInit {
   onCreatePost(postData: { title: string; content: string }) {
     // Send Http request
     this.httpService.onCreateAndStorePosts(postData);
+    this.ErrSubscription = this.httpService.postError.subscribe(error => {
+      this.errMessage = error;
+    });
   }
 
   onFetchPosts() {
@@ -33,8 +39,13 @@ export class AppComponent implements OnInit {
       this.isFetching = false;
       this.loadedPosts = posts;
     }, error => {
+      this.isFetching = false;
       this.errMessage = error.message;
     });
+  }
+
+  onClearErrors(){
+    this.errMessage = null;
   }
 
   onClearPosts() {
@@ -43,7 +54,7 @@ export class AppComponent implements OnInit {
     this.loadedPosts = [];
   }
 
-  private fetchPosts(){
-    return this.httpClient.get('');
+  ngOnDestroy(){
+    this.ErrSubscription.unsubscribe();
   }
 }
