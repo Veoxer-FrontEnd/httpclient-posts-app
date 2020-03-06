@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { HttpService } from './http.service';
 
 @Component({
   selector: 'app-root',
@@ -8,28 +9,41 @@ import { HttpClient } from '@angular/common/http';
 })
 export class AppComponent implements OnInit {
   loadedPosts = [];
+  isFetching = false;
+  errMessage = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private httpClient: HttpClient, private httpService: HttpService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.fetchAllPosts();
+  }
 
   onCreatePost(postData: { title: string; content: string }) {
     // Send Http request
-    this.http
-      .post(
-        'https://ng-complete-guide-c56d3.firebaseio.com/posts.json',
-        postData
-      )
-      .subscribe(responseData => {
-        console.log(responseData);
-      });
+    this.httpService.onCreateAndStorePosts(postData);
   }
 
   onFetchPosts() {
-    // Send Http request
+    this.fetchAllPosts();
+  }
+
+  private fetchAllPosts(){
+    this.isFetching = true;
+    this.httpService.onFetchPosts().subscribe(posts => {
+      this.isFetching = false;
+      this.loadedPosts = posts;
+    }, error => {
+      this.errMessage = error.message;
+    });
   }
 
   onClearPosts() {
     // Send Http request
+    this.httpService.onDeletePosts();
+    this.loadedPosts = [];
+  }
+
+  private fetchPosts(){
+    return this.httpClient.get('');
   }
 }
